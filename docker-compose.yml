@@ -1,0 +1,28 @@
+version: '3.9'
+services:
+  emulator:
+    build:
+      context: .
+    container_name: firestore-emulator
+    ports:
+      - "8085:8080"
+      - "4000:4000" # Emulator UIs
+      - "9150:9150" # Emulator UI
+    volumes:
+      - ./firebase.json:/workspace/firebase.json
+      - ./firestore.rules:/workspace/firestore.rules
+    environment:
+      FIREBASE_AUTH_EMULATOR_HOST: "0.0.0.0:9099"
+    command: ["firebase", "emulators:start", "--only", "firestore", "--project", "test-project"]
+
+  app:
+    build:
+      context: .
+    container_name: firestore-app
+    platform: linux/amd64
+    volumes:
+      - ./index.js:/workspace/index.js
+    environment:
+      FIRESTORE_EMULATOR_HOST: "firestore-emulator:8080"
+    depends_on:
+      - emulator
